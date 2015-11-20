@@ -11,13 +11,12 @@ compiler:
 #notifications:
 #  slack: 
 env:
-  - ROS_DISTRO=hydro AFTER_INSTALL=""
-  - ROS_DISTRO=hydro USE_CATKIN_MAKE=true BEFORE_SCRIPT="pwd; git clone http://github.com/jsk-ros-pkg/jsk_common_msgs" NOT_TEST_INSTALL=true
-  - ROS_DISTRO=hydro AFTER_INSTALL="" TEST_PKGS=" "
-  - ROS_DISTRO=hydro AFTER_INSTALL="" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-  - ROS_DISTRO=hydro AFTER_INSTALL="mongodb-clients"
-  - ROS_DISTRO=hydro BEFORE_SCRIPT="pwd; git clone https://github.com/ros-industrial/industrial_core"
-  - ROS_DISTRO=hydro USE_JENKINS="true" NO_SUDO="true"
+#  - ROS_DISTRO=hydro AFTER_INSTALL=""
+#  - ROS_DISTRO=hydro USE_CATKIN_MAKE=true BEFORE_SCRIPT="pwd; git clone http://github.com/jsk-ros-pkg/jsk_common_msgs" NOT_TEST_INSTALL=true
+#  - ROS_DISTRO=hydro AFTER_INSTALL="" TEST_PKGS=" "
+#  - ROS_DISTRO=hydro AFTER_INSTALL="" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+#  - ROS_DISTRO=hydro AFTER_INSTALL="mongodb-clients"
+#  - ROS_DISTRO=hydro BEFORE_SCRIPT="pwd; git clone https://github.com/ros-industrial/industrial_core"
   - ROS_DISTRO=indigo BUILDER='not-compile'
   - ROS_DISTRO=indigo BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis
   - ROS_DISTRO=indigo BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis TRAVIS_BRANCH=master TRAVIS_COMMIT=''  TRAVIS_PULL_REQUEST=''
@@ -25,7 +24,7 @@ env:
   - ROS_DISTRO=jade BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis
   - ROS_DISTRO=jade BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis TRAVIS_BRANCH=master TRAVIS_COMMIT=''  TRAVIS_PULL_REQUEST=''
 before_script:
-  - mkdir .travis; cp * .travis # need to copy, since directory starting from . is ignoreed by catkin build
+  - mkdir .travis; cp * .travis  # Need to copy, since directory starting from . is ignoreed by catkin build
   - export BEFORE_SCRIPT="rm -fr common_travis/CATKIN_IGNORE; ${BEFORE_SCRIPT}"
   - if [ "${USE_CATKIN_MAKE}" == "true" ] ;then sed -i 's@catkin build -i -v --limit-status-rate 0.001@catkin_make@' .travis/travis.sh; fi
   - if [ "${USE_CATKIN_MAKE}" == "true" ] ;then sed -i 's@catkin run_tests --no-deps --limit-status-rate 0.001@catkin_make run_tests@' .travis/travis.sh; fi
