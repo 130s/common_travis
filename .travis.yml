@@ -1,35 +1,35 @@
 #   This .travis.yml works to check "this" repository, namely `common_travis`. Do not get confused with the check of "client" repositories (repos that use travis configs in this repo).
+
+#  Copied from JSK travis and modified.
+
 sudo: required
 dist: trusty
 # Force travis to use its minimal image with default Python settings
 language: generic
 compiler:
   - gcc
+#notifications:
+#  slack: 
 env:
-  global:
-    - CATKIN_WS=~/catkin_ws
-    - CATKIN_WS_SRC=${CATKIN_WS}/src
-  matrix:
-    - CI_ROS_DISTRO="indigo" DEB_REPOSITORY=http://packages.ros.org/ros/ubuntu
-    - CI_ROS_DISTRO="indigo" DEB_REPOSITORY=http://packages.ros.org/ros-shadow-fixed/ubuntu
-matrix:
-  allow_failures:
-    - env: CI_ROS_DISTRO="jade"   BIN_REPOSITORY=http://packages.ros.org/ros/ubuntu
-    - env: CI_ROS_DISTRO="jade"   BIN_REPOSITORY=http://packages.ros.org/ros-shadow-fixed/ubuntu
-notifications:
-  email:
-    recipients:
-      - iiysaito@opensource-robotics.tokyo.jp
-    on_success: always #[always|never|change] # default: change
-    on_failure: always #[always|never|change] # default: always
-install:
-  - sudo sh -c "echo \"deb ${DEB_REPOSITORY} `lsb_release -cs` main\" > /etc/apt/sources.list.d/ros-latest.list"
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq -y python-rosdep python-catkin-tools
-  - sudo rosdep init
-  - rosdep update
-  # Use rosdep to install all dependencies (including ROS itself)
-  - rosdep install --from-paths $TRAVIS_BUILD_DIR -i -y --rosdistro $CI_ROS_DISTRO
-script:  # What to do here with this particular repo?
-#  - source /opt/ros/$CI_ROS_DISTRO/setup.bash
+  - ROS_DISTRO=hydro AFTER_INSTALL=""
+  - ROS_DISTRO=hydro USE_CATKIN_MAKE=true BEFORE_SCRIPT="pwd; git clone http://github.com/jsk-ros-pkg/jsk_common_msgs" NOT_TEST_INSTALL=true
+  - ROS_DISTRO=hydro AFTER_INSTALL="" TEST_PKGS=" "
+  - ROS_DISTRO=hydro AFTER_INSTALL="" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+  - ROS_DISTRO=hydro AFTER_INSTALL="mongodb-clients"
+  - ROS_DISTRO=hydro BEFORE_SCRIPT="pwd; git clone https://github.com/ros-industrial/industrial_core"
+  - ROS_DISTRO=hydro USE_JENKINS="true" NO_SUDO="true"
+  - ROS_DISTRO=indigo BUILDER='not-compile'
+  - ROS_DISTRO=indigo BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis
+  - ROS_DISTRO=indigo BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis TRAVIS_BRANCH=master TRAVIS_COMMIT=''  TRAVIS_PULL_REQUEST=''
+  - ROS_DISTRO=jade BUILDER='not-compile'
+  - ROS_DISTRO=jade BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis
+  - ROS_DISTRO=jade BUILDER='not-compile' TRAVIS_REPO_SLUG=130s/common_travis TRAVIS_BRANCH=master TRAVIS_COMMIT=''  TRAVIS_PULL_REQUEST=''
+before_script:
+  - mkdir .travis; cp * .travis # need to copy, since directory starting from . is ignoreed by catkin build
+  - export BEFORE_SCRIPT="rm -fr common_travis/CATKIN_IGNORE; ${BEFORE_SCRIPT}"
+  - if [ "${USE_CATKIN_MAKE}" == "true" ] ;then sed -i 's@catkin build -i -v --limit-status-rate 0.001@catkin_make@' .travis/travis.sh; fi
+  - if [ "${USE_CATKIN_MAKE}" == "true" ] ;then sed -i 's@catkin run_tests --no-deps --limit-status-rate 0.001@catkin_make run_tests@' .travis/travis.sh; fi
+  - if [ "${USE_CATKIN_MAKE}" == "true" ] ;then export CATKIN_PARALLEL_JOBS="--no-color" ; fi
+script:
+  - source .travis/travis.sh
+  - if [ "${AFTER_INSTALL}" != "" ] ; then sudo apt-get install -f ${AFTER_INSTALL}; fi
