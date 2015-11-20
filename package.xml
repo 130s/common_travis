@@ -1,0 +1,15 @@
+<package>
+  <name>common_travis</name>
+  <version>0.0.1</version>
+  <description>common_travis script suite</description>
+  <license>BSD</license>
+  <maintainer email="130s@2000.jukuin.keio.ac.jp">Isaac I. Y. Saito</maintainer>
+  <author email="iiysaito@opensource-robotics.tokyo.jp">Isaac I. Y. Saito</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>python</build_depend>
+
+  <export/>
+</package>
