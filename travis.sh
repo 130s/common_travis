@@ -42,11 +42,12 @@ function error {
 
 BUILDER=catkin
 ROSWS=wstool
+CI_PARENT_DIR=.ci_config  # This is the folder name that is used in downstream repositories in order to point to this repo.
 
 trap error ERR
 
 git branch --all
-if [ "`git diff origin/master FETCH_HEAD .travis`" != "" ] ; then DIFF=`git diff origin/master FETCH_HEAD .travis | grep .*Subproject | sed s'@.*Subproject commit @@' | sed 'N;s/\n/.../'`; (cd .travis/;git log --oneline --graph --left-right --first-parent --decorate $DIFF) | tee /tmp/$$-travis-diff.log; grep -c '<' /tmp/$$-travis-diff.log && exit 1; echo "ok"; fi
+if [ "`git diff origin/master FETCH_HEAD $CI_PARENT_DIR`" != "" ] ; then DIFF=`git diff origin/master FETCH_HEAD $CI_PARENT_DIR | grep .*Subproject | sed s'@.*Subproject commit @@' | sed 'N;s/\n/.../'`; (cd $CI_PARENT_DIR/;git log --oneline --graph --left-right --first-parent --decorate $DIFF) | tee /tmp/$$-travis-diff.log; grep -c '<' /tmp/$$-travis-diff.log && exit 1; echo "ok"; fi
 
 travis_time_start setup_ros
 
@@ -65,7 +66,7 @@ sudo -E sh -c 'echo "deb $ROS_REPOSITORY_PATH `lsb_release -cs` main" > /etc/apt
 wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 lsb_release -a
 sudo apt-get update
-sudo apt-get install -y -q -qq python-rosdep python-wstool python-catkin-tools ros-$ROS_DISTRO-rosbash ros-$ROS_DISTRO-rospack
+sudo apt-get install -y -q -qq python-catkin-tools python-rosdep python-wstool ros-$ROS_DISTRO-rosbash ros-$ROS_DISTRO-rospack
 # If more DEBs needed during preparation, define ADDITIONAL_DEBS variable where you list the name of DEB(S, delimitted by whitespace)
 if [ "$ADDITIONAL_DEBS" ]; then sudo apt-get install -q -qq -y $ADDITIONAL_DEBS;  fi
 # MongoDB hack - I don't fully understand this but its for moveit_warehouse
@@ -127,12 +128,8 @@ cd ~/ros/ws_$DOWNSTREAM_REPO_NAME/src
 ln -s $CI_SOURCE_PATH .
 ####if [ "$USE_DEB" == source -a -e $DOWNSTREAM_REPO_NAME/setup_upstream.sh ]; then $ROSWS init .; $DOWNSTREAM_REPO_NAME/setup_upstream.sh -w ~/ros/ws_$DOWNSTREAM_REPO_NAME ; $ROSWS update; fi
 # Disable metapackage
-find -L . -name package.xml -print -exec ${CI_SOURCE_PATH}/.travis/check_metapackage.py {} \; -a -exec bash -c 'touch `dirname ${1}`/CATKIN_IGNORE' funcname {} \;
+find -L . -name package.xml -print -exec ${CI_SOURCE_PATH}/$CI_PARENT_DIR/check_metapackage.py {} \; -a -exec bash -c 'touch `dirname ${1}`/CATKIN_IGNORE' funcname {} \;
 
-# Install dependencies for source repos
-if [ "$ROSDEP_UPDATE_QUIET" == "true" ]; then
-    ROSDEP_ARGS=>/dev/null
-fi
 source /opt/ros/$ROS_DISTRO/setup.bash # ROS_PACKAGE_PATH is important for rosdep
 # Save .rosinstall file of this tested downstream repo, only during the runtime on travis CI
 if [ ! -e .rosinstall ]; then
@@ -152,8 +149,8 @@ travis_time_end
 travis_time_start rosdep_install
 
 # Run "rosdep install" command. Avoid manifest.xml files if any.
-if [ -e ${CI_SOURCE_PATH}/.travis/rosdep-install.sh ]; then 
-    ${CI_SOURCE_PATH}/.travis/rosdep-install.sh
+if [ -e ${CI_SOURCE_PATH}/$CI_PARENT_DIR/rosdep-install.sh ]; then 
+    ${CI_SOURCE_PATH}/$CI_PARENT_DIR/rosdep-install.sh
 fi
 
 travis_time_end
