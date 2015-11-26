@@ -240,3 +240,7 @@ if [ "$BUILDER" == catkin -a -e ~/ros/ws_$DOWNSTREAM_REPO_NAME/build/ ]; then ca
 if [ "$BUILDER" == catkin -a -e ~/.ros/test_results/ ]; then catkin_test_results --verbose --all ~/.ros/test_results/ || error; fi
 
 travis_time_end
+
+cd $TRAVIS_BUILD_DIR  # cd back to the repository's home directory with travis
+pwd
+
